@@ -54,18 +54,22 @@ class HomeController extends Controller
         $search=isset($request['search'])?$request['search']:"";
         $searchDate=isset($request['searchDate'])?$request['searchDate']:\Carbon\Carbon::now();
         $newDate = $searchDate?\Carbon\Carbon::parse($searchDate)->format('Y-m-d'):"";
-        if($search){
+        if($search && !$newDate){
             $data = Appointment::join('specialities', 'appointments.speciality', '=', 'specialities.id')
             ->Where('name', 'LIKE', "%$search%")
-            ->orWhere('date', 'LIKE', "%$newDate%")
             ->get();
         }
-        else{
+        elseif(!$search && $newDate){
             $data = Appointment::join('specialities', 'appointments.speciality', '=', 'specialities.id')
             ->Where('date', 'LIKE', "%$newDate%")
             ->get();
         }
-          
+        else{
+            $data = Appointment::join('specialities', 'appointments.speciality', '=', 'specialities.id')
+            ->Where('name', 'LIKE', "%$search%")
+            ->orWhere('date', 'LIKE', "%$newDate%")
+            ->get();
+        }  
         $user = User::all();
         return view('admin.showAppointments',compact('data','user','search','searchDate','newDate'));
     }
